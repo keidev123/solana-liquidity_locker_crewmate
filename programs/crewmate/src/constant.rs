@@ -1,4 +1,4 @@
-pub const MINIMUM_LOCK_DURATION: u64 = 900;   //  it should be modified to 86400 * 2 after test
+pub const MINIMUM_LOCK_DURATION: u64 = 10;   //  it should be modified to 86400 * 2 after test
 
 pub const MINIMUM_LOCK_PERCENT: u32 = 1; // 25%
 
