@@ -1,6 +1,6 @@
 pub const MINIMUM_LOCK_DURATION: u64 = 10;   //  it should be modified to 86400 * 2 after test
 
-pub const MINIMUM_LOCK_PERCENT: u32 = 1; // 25%
+pub const MINIMUM_LOCK_PERCENT: u32 = 0; // 25%
 
 pub const GLOBAL_SEED: &[u8] = b"GLOBAL_SEED";
 

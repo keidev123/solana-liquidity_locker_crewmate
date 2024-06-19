@@ -4,14 +4,14 @@
 seeds = false
 skip-lint = false
 
-[programs.localnet]
-crewmate = "s1xVDPnBMJ2pAjZ2t2ijnz27BJzRbySxb9eWx6wT9cV"
+[programs.mainnet]
+crewmate = "s1xY9GbteSddorsie2y265Qg56QXa45C6NVAaxb56wV"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "Mainnet"
 wallet = "./id.json"
 
 [scripts]

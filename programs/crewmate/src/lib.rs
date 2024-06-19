@@ -10,7 +10,7 @@ pub mod instructions;
 
 use crate::instructions::*;
 
-declare_id!("s1xVDPnBMJ2pAjZ2t2ijnz27BJzRbySxb9eWx6wT9cV");
+declare_id!("s1xY9GbteSddorsie2y265Qg56QXa45C6NVAaxb56wV");
 
 #[program]
 pub mod crewmate {
