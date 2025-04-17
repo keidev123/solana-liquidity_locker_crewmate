@@ -1,17 +1,18 @@
 [toolchain]
+anchor_version = "0.30.1"
 
 [features]
-seeds = false
+resolution = true
 skip-lint = false
 
-[programs.mainnet]
-crewmate = "s1xY9GbteSddorsie2y265Qg56QXa45C6NVAaxb56wV"
+[programs.localnet]
+crewmate = "FAZ2Q6KW78MzWfJR6Vtof1SbVz54QjiBTBeBkRiaYhYi"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Mainnet"
+cluster = "localnet"
 wallet = "./id.json"
 
 [scripts]

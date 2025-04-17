@@ -14,15 +14,15 @@ pub struct GlobalState {
 #[derive(Default)]
 pub struct LockState {
     pub owner: Pubkey,
-    pub base_mint: Pubkey,
+    pub base_mint: Pubkey, //
     pub lp_mint: Pubkey,
     pub amount: u64,
     pub start_date: u64,
     pub end_date: u64,
-    pub pool_id: Pubkey,
-    pub lp_vault: Pubkey,
+    pub pool_id: Pubkey,  //
+    pub lp_vault: Pubkey, //
     pub locked: bool,
-    pub lock_token_times: u8,
+    pub lock_token_times: u8, //
     pub locked_num: u8,
     pub lock_seed: u64,
 }

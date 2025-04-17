@@ -66,7 +66,7 @@ pub fn handle(ctx: Context<Lock>, seed: u64, lock_amount: u64, lock_duration: u6
 pub struct Lock<'info> {
     #[account(
     init,
-    payer = owner,
+    payer = owner,  
     space = 8 + size_of::<LockState>(),
     seeds = [owner.key().as_ref(), lp_mint.key().as_ref(), seed.to_le_bytes().as_ref()],
     bump,

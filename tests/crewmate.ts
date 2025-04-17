@@ -9,7 +9,7 @@ import { BN } from "bn.js";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
 // const connection = new Connection("https://api.devnet.solana.com")
-const connection = new Connection("http://localhost:8899")
+const connection = new Connection("http://localhost:8899", "confirmed")
 const GLOBAL_SEED = "GLOBAL_SEED"
 const LOCK_SEED = "LOCK_SEED"
 const DAY = 86400
@@ -37,7 +37,7 @@ describe("crewmate-j", () => {
 
   const lockDay = 2
   console.log("Admin's wallet address is : ", user.publicKey.toBase58())
-  
+
   const program = anchor.workspace.Crewmate as Program<Crewmate>;
   it("Airdrop to admin wallet", async () => {
     console.log(`Requesting airdrop to admin for 1SOL : ${user.publicKey.toBase58()}`)
@@ -53,29 +53,29 @@ describe("crewmate-j", () => {
       blockhash,
       lastValidBlockHeight,
       signature
-    }, 'finalized');
+    }, 'confirmed');
     console.log("admin wallet balance : ", (await connection.getBalance(user.publicKey)) / 10 ** 9, "SOL")
   })
 
-  // it("Airdrop to user wallet", async () => {
-  //   console.log("Created a user, address is ", user2.publicKey.toBase58())
-  //   console.log(`Requesting airdrop for another user ${user.publicKey.toBase58()}`)
-  //   // 1 - Request Airdrop
-  //   const signature = await connection.requestAirdrop(
-  //     user2.publicKey,
-  //     10 ** 9
-  //   );
-  //   // 2 - Fetch the latest blockhash
-  //   const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
-  //   // 3 - Confirm transaction success
-  //   await connection.confirmTransaction({
-  //     blockhash,
-  //     lastValidBlockHeight,
-  //     signature
-  //   }, 'finalized');
-  //   console.log("user balance : ", (await connection.getBalance(user.publicKey)) / 10 ** 9, "SOL")
-  // })
-  
+  it("Airdrop to user wallet", async () => {
+    console.log("Created a user, address is ", user2.publicKey.toBase58())
+    console.log(`Requesting airdrop for another user ${user.publicKey.toBase58()}`)
+    // 1 - Request Airdrop
+    const signature = await connection.requestAirdrop(
+      user2.publicKey,
+      10 ** 9
+    );
+    // 2 - Fetch the latest blockhash
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+    // 3 - Confirm transaction success
+    await connection.confirmTransaction({
+      blockhash,
+      lastValidBlockHeight,
+      signature
+    }, 'confirmed');
+    console.log("user balance : ", (await connection.getBalance(user.publicKey)) / 10 ** 9, "SOL")
+  })
+
   it("Mint token to user wallet", async () => {
     console.log("Trying to reate and mint token to user's wallet")
     console.log("Here, contract uses this token as LP token")
@@ -111,9 +111,7 @@ describe("crewmate-j", () => {
 
       const tx = await program.methods.initialize()
         .accounts({
-          admin: user.publicKey,
-          globalState,
-          systemProgram: SystemProgram.programId
+          admin: user.publicKey
         })
         .signers([user])
         .transaction()
@@ -138,7 +136,7 @@ describe("crewmate-j", () => {
       )
       const lockStates = await program.account.lockState.all()
       const [lockState] = PublicKey.findProgramAddressSync(
-        [user.publicKey.toBuffer(), mint.toBuffer(),  id.toArrayLike(Buffer, "le", 8),],
+        [user.publicKey.toBuffer(), mint.toBuffer(), id.toArrayLike(Buffer, "le", 8),],
         program.programId
       )
       console.log("🚀 ~ it ~ lockState:", lockState.toBase58())
@@ -176,25 +174,21 @@ describe("crewmate-j", () => {
       const instruction = await program.methods
         .lock(id, amount.div(new BN(2)), new BN(11))
         .accounts({
-          globalState,
           vaultAta,
-          lockState,
           baseMint,
           userAta,
           lpMint: mint,
           owner: user.publicKey,
           pool: poolId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          systemProgram: SystemProgram.programId
         })
         .instruction()
-        
+
       transaction.add(instruction)
       transaction.feePayer = user.publicKey
       transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
       console.log(await connection.simulateTransaction(transaction))
       const sig = await sendAndConfirmTransaction(connection, transaction, [user])
-      console.log({sig})
+      console.log({ sig })
       setTimeout(async () => {
         console.log("trying to get the token balance of user wallet")
         const balInfo = await connection.getTokenAccountBalance(userAta)
@@ -217,7 +211,7 @@ describe("crewmate-j", () => {
 
   it("Lock lp token 2", async () => {
     const id = new BN(2)
-      console.log("Trying to lock 30% of all lp token to 2")
+    console.log("Trying to lock 30% of all lp token to 2")
     try {
       const [globalState] = PublicKey.findProgramAddressSync(
         [Buffer.from(GLOBAL_SEED)],
@@ -263,19 +257,15 @@ describe("crewmate-j", () => {
       const instruction = await program.methods
         .lock(id, amount.div(new BN(4)), new BN(11))
         .accounts({
-          globalState,
           vaultAta,
-          lockState,
           baseMint,
           userAta,
           lpMint: mint,
           owner: user.publicKey,
-          pool: poolId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          systemProgram: SystemProgram.programId
+          pool: poolId
         })
         .instruction()
-        
+
       transaction.add(instruction)
       transaction.feePayer = user.publicKey
       transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
@@ -300,7 +290,7 @@ describe("crewmate-j", () => {
       console.log("error in lock transaction :", error)
     }
   })
-  
+
   it("Withdraw locked LP token from vault", async () => {
     await sleep(10000)
     console.log("Trying to withdraw lp token from vault (after lock period)")
@@ -335,15 +325,11 @@ describe("crewmate-j", () => {
       const transaction = await program.methods
         .withdraw(id, bump)
         .accounts({
-          globalState,
           vaultAta,
-          lockState,
           userAta,
           lpMint: mint,
           owner: user.publicKey,
           pool: poolId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          systemProgram: SystemProgram.programId
         })
         .transaction()
 
@@ -351,7 +337,7 @@ describe("crewmate-j", () => {
       transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash
       console.log(await connection.simulateTransaction(transaction))
       const sig = await sendAndConfirmTransaction(connection, transaction, [user])
-        console.log({sig})
+      console.log({ sig })
       setTimeout(async () => {
         console.log("trying to get the balance of user wallet")
         const balInfo = await connection.getTokenAccountBalance(userAta)
@@ -649,15 +635,11 @@ describe("crewmate-j", () => {
       const transaction = await program.methods
         .withdraw(id, bump)
         .accounts({
-          globalState,
           vaultAta,
-          lockState,
           userAta,
           lpMint: mint,
           owner: user.publicKey,
           pool: poolId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          systemProgram: SystemProgram.programId
         })
         .transaction()
 

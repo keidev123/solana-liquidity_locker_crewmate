@@ -2,7 +2,7 @@ use crate::{constant::*, errors::CustomErrors::*, state::*};
 use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Mint, Token, TokenAccount, Transfer as SplTransfer};
 
-pub fn handle(ctx: Context<IncreaseLockAmount>,seed: u64, lock_amount: u64) -> Result<()> {
+pub fn handle(ctx: Context<IncreaseLockAmount>, seed: u64, lock_amount: u64) -> Result<()> {
     let lock_state = &mut ctx.accounts.lock_state;
     if !lock_state.locked {
         return Err(LpAlreadyWithdrawn.into());
@@ -11,6 +11,7 @@ pub fn handle(ctx: Context<IncreaseLockAmount>,seed: u64, lock_amount: u64) -> R
         return Err(InvalidLock.into());
     }
     if ctx.accounts.lp_mint.supply < lock_state.amount + lock_amount {
+        //why??    ctx.accounts.lp_mint.supply?
         return Err(LockMoreThanSupply.into());
     }
 
@@ -27,7 +28,7 @@ pub fn handle(ctx: Context<IncreaseLockAmount>,seed: u64, lock_amount: u64) -> R
     };
     let cpi_program = token_program.to_account_info();
 
-    token::transfer(CpiContext::new(cpi_program, cpi_accounts), lock_amount)?;
+    token::transfer(CpiContext::new(cpi_program, cpi_accounts), lock_amount)?; // don't understand
 
     lock_state.amount += lock_amount;
     lock_state.lock_token_times += 1;
